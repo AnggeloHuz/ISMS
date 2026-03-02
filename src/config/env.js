@@ -16,6 +16,7 @@ const env = {
         name: process.env.DB_NAME || 'sistema_gestion_abasto',
         user: process.env.DB_USER,
         password: process.env.DB_PASSWORD || '',
+        mysqldumpPath: process.env.MYSQLDUMP_PATH || 'mysqldump',
     },
 };
 
