@@ -1,0 +1,18 @@
+{
+  "name": "isms",
+  "version": "1.0.0",
+  "description": "Intelligent Supply Management System",
+  "main": "src/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js"
+  },
+  "keywords": [
+    "supply",
+    "management",
+    "system"
+  ],
+  "author": "",
+  "license": "ISC"
+}

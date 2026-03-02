@@ -1,0 +1,23 @@
+import dotenv from 'dotenv';
+
+dotenv.config();
+
+const env = {
+    port: process.env.PORT || 3000,
+    nodeEnv: process.env.NODE_ENV || 'development',
+    jwtSecret: process.env.JWT_SECRET,
+    jwtExpiresIn: process.env.JWT_EXPIRES_IN || '24h',
+    corsOrigin: process.env.CORS_ORIGIN || '*',
+};
+
+// Validar variables de entorno requeridas
+const requiredVars = ['JWT_SECRET'];
+const missingVars = requiredVars.filter((key) => !process.env[key]);
+
+if (missingVars.length > 0) {
+    console.error(`❌ Faltan variables de entorno requeridas: ${missingVars.join(', ')}`);
+    console.error('   Por favor revisa tu archivo .env.');
+    process.exit(1);
+}
+
+export default env;
