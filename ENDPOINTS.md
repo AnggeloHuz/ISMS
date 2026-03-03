@@ -73,6 +73,55 @@ curl -X POST http://localhost:3000/api/backup
 
 ---
 
+## 👥 Listar Usuarios
+
+Lista todos los usuarios del sistema con paginación. No expone la contraseña.
+
+| Propiedad | Valor            |
+| --------- | ---------------- |
+| **Ruta**  | `/api/users`     |
+| **Método**| `GET`            |
+| **Roles** | `administrador`  |
+
+### Parámetros de Query
+
+| Parámetro | Tipo   | Default | Descripción                   |
+| --------- | ------ | ------- | ----------------------------- |
+| `page`    | number | `1`     | Número de página              |
+| `limit`   | number | `10`    | Cantidad de registros por página (máx. 100) |
+
+### Ejemplo de petición
+
+```bash
+curl http://localhost:3000/api/users?page=1&limit=10
+```
+
+### Respuesta exitosa — `200 OK`
+
+```json
+{
+  "estado": "ok",
+  "usuarios": [
+    {
+      "id": 1,
+      "nombre_usuario": "admin",
+      "nombre_completo": "Administrador del Sistema",
+      "rol": "administrador",
+      "esta_activo": true,
+      "fecha_registro": "2026-03-02T18:00:00.000Z"
+    }
+  ],
+  "paginacion": {
+    "total": 1,
+    "pagina": 1,
+    "limite": 10,
+    "totalPaginas": 1
+  }
+}
+```
+
+---
+
 ## 👥 Crear Usuario
 
 Crea un nuevo usuario en el sistema.
@@ -149,6 +198,145 @@ Authorization: Bearer <tu_token_jwt>
 ```
 
 ---
+
+## 🔑 Actualizar Contraseña de Usuario
+
+Permite al administrador cambiar la contraseña de cualquier usuario.
+
+| Propiedad | Valor                      |
+| --------- | -------------------------- |
+| **Ruta**  | `/api/users/:id/password`  |
+| **Método**| `PATCH`                    |
+| **Roles** | `administrador`            |
+
+### Ejemplo de petición (Body)
+
+```json
+{
+  "nueva_clave": "nuevaContraseña456"
+}
+```
+
+*La contraseña debe tener al menos 6 caracteres.*
+
+### Respuesta exitosa — `200 OK`
+
+```json
+{
+  "estado": "ok",
+  "id": 2,
+  "mensaje": "Contraseña actualizada correctamente."
+}
+```
+
+### Respuestas de error
+
+**`400 Bad Request`**
+```json
+{
+  "estado": "error",
+  "mensaje": "No se pudo actualizar la contraseña.",
+  "detalle": "La contraseña debe tener al menos 6 caracteres."
+}
+```
+
+---
+
+## 🏷️ Actualizar Rol de Usuario
+
+Permite al administrador cambiar el rol de un usuario.
+
+| Propiedad | Valor                  |
+| --------- | ---------------------- |
+| **Ruta**  | `/api/users/:id/role`  |
+| **Método**| `PATCH`                |
+| **Roles** | `administrador`        |
+
+### Ejemplo de petición (Body)
+
+```json
+{
+  "nuevo_rol": "almacenista"
+}
+```
+
+*Roles permitidos: `administrador`, `cajero`, `almacenista`.*
+
+### Respuesta exitosa — `200 OK`
+
+```json
+{
+  "estado": "ok",
+  "mensaje": "Rol actualizado exitosamente.",
+  "usuario": {
+    "id": 2,
+    "nombre_usuario": "juanp",
+    "nuevo_rol": "almacenista"
+  }
+}
+```
+
+### Respuestas de error
+
+**`400 Bad Request`**
+```json
+{
+  "estado": "error",
+  "mensaje": "No se pudo actualizar el rol.",
+  "detalle": "Rol inválido. Roles permitidos: administrador, cajero, almacenista"
+}
+```
+
+---
+
+## 🗑️ Eliminar Usuario (Soft Delete)
+
+Desactiva un usuario estableciendo `esta_activo = false`. No elimina el registro de la base de datos.
+
+| Propiedad | Valor            |
+| --------- | ---------------- |
+| **Ruta**  | `/api/users/:id` |
+| **Método**| `DELETE`         |
+| **Roles** | `administrador`  |
+
+### Ejemplo de petición
+
+```bash
+curl -X DELETE http://localhost:3000/api/users/2
+```
+
+### Respuesta exitosa — `200 OK`
+
+```json
+{
+  "estado": "ok",
+  "id": 2,
+  "nombre_usuario": "juanp",
+  "mensaje": "Usuario desactivado correctamente."
+}
+```
+
+### Respuestas de error
+
+**`400 Bad Request`** (Auto-eliminación)
+```json
+{
+  "estado": "error",
+  "mensaje": "No puedes desactivar tu propia cuenta."
+}
+```
+
+**`400 Bad Request`** (Ya desactivado)
+```json
+{
+  "estado": "error",
+  "mensaje": "No se pudo eliminar el usuario.",
+  "detalle": "El usuario ya se encuentra desactivado."
+}
+```
+
+---
+
 
 ## 🔐 Iniciar Sesión
 
