@@ -1,27 +1,28 @@
 import mysql from 'mysql2/promise';
+import bcrypt from 'bcrypt';
 import env from '../config/env.js';
 
 /**
  * Inicializa la base de datos: la crea si no existe y ejecuta la migración de tablas.
  */
 const initDatabase = async () => {
-    // Conexión inicial SIN base de datos para poder crearla
-    const connection = await mysql.createConnection({
-        host: env.db.host,
-        port: env.db.port,
-        user: env.db.user,
-        password: env.db.password,
-        multipleStatements: true,
-    });
+  // Conexión inicial SIN base de datos para poder crearla
+  const connection = await mysql.createConnection({
+    host: env.db.host,
+    port: env.db.port,
+    user: env.db.user,
+    password: env.db.password,
+    multipleStatements: true,
+  });
 
-    try {
-        // 1. Crear la base de datos si no existe
-        await connection.query(`CREATE DATABASE IF NOT EXISTS \`${env.db.name}\`;`);
-        await connection.query(`USE \`${env.db.name}\`;`);
-        console.log(`📦 Base de datos "${env.db.name}" verificada/creada.`);
+  try {
+    // 1. Crear la base de datos si no existe
+    await connection.query(`CREATE DATABASE IF NOT EXISTS \`${env.db.name}\`;`);
+    await connection.query(`USE \`${env.db.name}\`;`);
+    console.log(`📦 Base de datos "${env.db.name}" verificada/creada.`);
 
-        // 2. Crear todas las tablas
-        const migrationSQL = `
+    // 2. Crear todas las tablas
+    const migrationSQL = `
       -- ==========================================
       -- MÓDULO DE CONFIGURACIÓN Y USUARIOS
       -- ==========================================
@@ -175,38 +176,43 @@ const initDatabase = async () => {
       );
     `;
 
-        await connection.query(migrationSQL);
-        console.log('📋 Todas las tablas verificadas/creadas correctamente.');
+    await connection.query(migrationSQL);
+    console.log('📋 Todas las tablas verificadas/creadas correctamente.');
 
-        // 3. Datos iniciales (solo si no existen)
-        const [tasaRows] = await connection.query(
-            `SELECT COUNT(*) AS total FROM configuraciones WHERE clave_configuracion = 'tasa_bcv'`
-        );
-        if (tasaRows[0].total === 0) {
-            await connection.query(
-                `INSERT INTO configuraciones (clave_configuracion, valor_configuracion) VALUES ('tasa_bcv', '36.45')`
-            );
-            console.log('⚙️  Configuración inicial (tasa BCV) insertada.');
-        }
-
-        const [adminRows] = await connection.query(
-            `SELECT COUNT(*) AS total FROM usuarios WHERE nombre_usuario = 'admin'`
-        );
-        if (adminRows[0].total === 0) {
-            await connection.query(
-                `INSERT INTO usuarios (nombre_usuario, clave_acceso, nombre_completo, rol) 
-         VALUES ('admin', 'clave_super_secreta', 'Administrador del Sistema', 'administrador')`
-            );
-            console.log('👤 Usuario administrador inicial creado.');
-        }
-
-        console.log('✅ Migración completada exitosamente.\n');
-    } catch (error) {
-        console.error('❌ Error durante la migración:', error.message);
-        throw error;
-    } finally {
-        await connection.end();
+    // 3. Datos iniciales (solo si no existen)
+    const [tasaRows] = await connection.query(
+      `SELECT COUNT(*) AS total FROM configuraciones WHERE clave_configuracion = 'tasa_bcv'`
+    );
+    if (tasaRows[0].total === 0) {
+      await connection.query(
+        `INSERT INTO configuraciones (clave_configuracion, valor_configuracion) VALUES ('tasa_bcv', '36.45')`
+      );
+      console.log('⚙️  Configuración inicial (tasa BCV) insertada.');
     }
+
+    const [adminRows] = await connection.query(
+      `SELECT COUNT(*) AS total FROM usuarios WHERE nombre_usuario = 'admin'`
+    );
+    if (adminRows[0].total === 0) {
+      // Encriptar la contraseña leída desde las variables de entorno
+      const saltRounds = 10;
+      const hashedPassword = await bcrypt.hash(env.adminPassword, saltRounds);
+
+      await connection.query(
+        `INSERT INTO usuarios (nombre_usuario, clave_acceso, nombre_completo, rol) 
+         VALUES (?, ?, ?, ?)`,
+        ['admin', hashedPassword, 'Administrador del Sistema', 'administrador']
+      );
+      console.log('👤 Usuario administrador inicial creado (con contraseña encriptada).');
+    }
+
+    console.log('✅ Migración completada exitosamente.\n');
+  } catch (error) {
+    console.error('❌ Error durante la migración:', error.message);
+    throw error;
+  } finally {
+    await connection.end();
+  }
 };
 
 export default initDatabase;

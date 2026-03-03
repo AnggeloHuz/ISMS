@@ -8,6 +8,7 @@ const env = {
     jwtSecret: process.env.JWT_SECRET,
     jwtExpiresIn: process.env.JWT_EXPIRES_IN || '24h',
     corsOrigin: process.env.CORS_ORIGIN || '*',
+    adminPassword: process.env.ADMIN_PASSWORD || 'admin123',
 
     // Base de Datos
     db: {
@@ -21,7 +22,7 @@ const env = {
 };
 
 // Validar variables de entorno requeridas
-const requiredVars = ['JWT_SECRET', 'DB_USER'];
+const requiredVars = ['JWT_SECRET', 'DB_USER', 'ADMIN_PASSWORD'];
 const missingVars = requiredVars.filter((key) => !process.env[key]);
 
 if (missingVars.length > 0) {

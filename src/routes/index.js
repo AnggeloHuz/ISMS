@@ -1,11 +1,15 @@
 import { Router } from 'express';
 import healthRoutes from './health.routes.js';
 import backupRoutes from './backup.routes.js';
+import userRoutes from './user.routes.js';
+import authRoutes from './auth.routes.js';
 
 const router = Router();
 
 // ─── Registrar rutas ──────────────────────────────
 router.use('/', healthRoutes);
 router.use('/', backupRoutes);
+router.use('/auth', authRoutes);
+router.use('/users', userRoutes);
 
 export default router;
