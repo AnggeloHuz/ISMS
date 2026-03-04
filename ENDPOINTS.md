@@ -413,3 +413,77 @@ curl -X POST http://localhost:3000/api/auth/logout
 ```
 
 > **Nota HTTP:** En la respuesta exitosa vendrá un Header `Set-Cookie` invalidando la fecha de expiración del token.
+
+---
+
+## 📋 Listar Bitácora de Auditoría
+
+Lista los registros de auditoría del sistema con paginación. Incluye el nombre de usuario que realizó cada acción.
+
+| Propiedad | Valor            |
+| --------- | ---------------- |
+| **Ruta**  | `/api/audit`     |
+| **Método**| `GET`            |
+| **Roles** | `administrador`  |
+
+### Parámetros de Query
+
+| Parámetro | Tipo   | Default | Descripción                   |
+| --------- | ------ | ------- | ----------------------------- |
+| `page`    | number | `1`     | Número de página              |
+| `limit`   | number | `10`    | Cantidad de registros por página (máx. 100) |
+
+### Ejemplo de petición
+
+```bash
+curl http://localhost:3000/api/audit?page=1&limit=10
+```
+
+### Respuesta exitosa — `200 OK`
+
+```json
+{
+  "estado": "ok",
+  "registros": [
+    {
+      "id": 1,
+      "id_usuario": 1,
+      "nombre_usuario": "admin",
+      "operacion": "ACCESO",
+      "nombre_tabla": "usuarios",
+      "id_registro": 1,
+      "valor_anterior": null,
+      "valor_nuevo": null,
+      "direccion_ip": "::1",
+      "fecha_evento": "2026-03-03T13:00:00.000Z"
+    }
+  ],
+  "paginacion": {
+    "total": 1,
+    "pagina": 1,
+    "limite": 10,
+    "totalPaginas": 1
+  }
+}
+```
+
+### Operaciones registradas
+
+| Operación    | Endpoints que la generan      |
+| ------------ | ----------------------------- |
+| `ACCESO`     | Login, Backup                 |
+| `SALIDA`     | Logout                        |
+| `INSERTAR`   | Crear usuario                 |
+| `ACTUALIZAR` | Cambiar contraseña, cambiar rol |
+| `ELIMINAR`   | Desactivar usuario            |
+
+### Respuestas de error
+
+**`400 Bad Request`** (Página inexistente)
+```json
+{
+  "estado": "error",
+  "mensaje": "No se pudo obtener la bitácora de auditoría.",
+  "detalle": "La página 5 no existe. Solo hay 1 página(s) disponible(s)."
+}
+```

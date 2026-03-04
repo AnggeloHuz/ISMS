@@ -3,6 +3,7 @@ import healthRoutes from './health.routes.js';
 import backupRoutes from './backup.routes.js';
 import userRoutes from './user.routes.js';
 import authRoutes from './auth.routes.js';
+import auditRoutes from './audit.routes.js';
 
 const router = Router();
 
@@ -11,5 +12,7 @@ router.use('/', healthRoutes);
 router.use('/', backupRoutes);
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
+router.use('/audit', auditRoutes);
 
 export default router;
+

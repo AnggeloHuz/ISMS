@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { createUser, listUsers, updatePassword, updateRole, deleteUser } from '../controllers/user.controller.js';
+import { registrarBitacora } from '../controllers/audit.controller.js';
 import { verifyToken, requireRole } from '../middlewares/auth.middleware.js';
 
 const router = Router();
@@ -52,10 +53,8 @@ router.post(
     requireRole(['administrador']),
     async (req, res) => {
         try {
-            // Extraer datos del body
             const { nombre_usuario, clave_acceso, nombre_completo, rol } = req.body;
 
-            // Delegar toda la lógica al controlador
             const nuevoUsuario = await createUser({
                 nombre_usuario,
                 clave_acceso,
@@ -63,14 +62,22 @@ router.post(
                 rol
             });
 
-            // Responder al cliente
+            // Registrar en bitácora
+            await registrarBitacora({
+                id_usuario: req.user.id,
+                operacion: 'INSERTAR',
+                nombre_tabla: 'usuarios',
+                id_registro: nuevoUsuario.id,
+                valor_nuevo: nuevoUsuario,
+                direccion_ip: req.ip
+            });
+
             res.status(201).json({
                 estado: 'ok',
                 mensaje: 'Usuario creado exitosamente.',
                 usuario: nuevoUsuario
             });
         } catch (error) {
-            // Manejar errores de validación (400) o de base de datos (500)
             const isValidationError = error.message.includes('obligatorios') ||
                 error.message.includes('inválido') ||
                 error.message.includes('en uso');
@@ -105,6 +112,16 @@ router.patch(
             const { nueva_clave } = req.body;
 
             const resultado = await updatePassword({ id, nueva_clave });
+
+            // Registrar en bitácora (sin exponer contraseñas)
+            await registrarBitacora({
+                id_usuario: req.user.id,
+                operacion: 'ACTUALIZAR',
+                nombre_tabla: 'usuarios',
+                id_registro: Number(id),
+                valor_nuevo: { campo: 'clave_acceso', nota: 'Contraseña actualizada' },
+                direccion_ip: req.ip
+            });
 
             res.status(200).json({
                 estado: 'ok',
@@ -145,6 +162,17 @@ router.patch(
             const { nuevo_rol } = req.body;
 
             const resultado = await updateRole({ id, nuevo_rol });
+
+            // Registrar en bitácora
+            await registrarBitacora({
+                id_usuario: req.user.id,
+                operacion: 'ACTUALIZAR',
+                nombre_tabla: 'usuarios',
+                id_registro: Number(id),
+                valor_anterior: { rol: resultado.nombre_usuario },
+                valor_nuevo: { rol: resultado.nuevo_rol },
+                direccion_ip: req.ip
+            });
 
             res.status(200).json({
                 estado: 'ok',
@@ -193,6 +221,17 @@ router.delete(
             }
 
             const resultado = await deleteUser(id);
+
+            // Registrar en bitácora
+            await registrarBitacora({
+                id_usuario: req.user.id,
+                operacion: 'ELIMINAR',
+                nombre_tabla: 'usuarios',
+                id_registro: Number(id),
+                valor_anterior: { nombre_usuario: resultado.nombre_usuario, esta_activo: true },
+                valor_nuevo: { esta_activo: false },
+                direccion_ip: req.ip
+            });
 
             res.status(200).json({
                 estado: 'ok',

@@ -19,9 +19,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 // ─── Logger HTTP ──────────────────────────────────
-if (env.nodeEnv === 'development') {
-    app.use(morgan('dev'));
-}
+app.use(morgan('dev'));
 
 // ─── Rutas ────────────────────────────────────────
 app.use('/api', routes);
