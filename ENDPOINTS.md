@@ -473,9 +473,9 @@ curl http://localhost:3000/api/audit?page=1&limit=10
 | ------------ | ----------------------------------------- |
 | `ACCESO`     | Login, Backup                             |
 | `SALIDA`     | Logout                                    |
-| `INSERTAR`   | Crear usuario, Crear categoría, Crear proveedor, Crear cuenta bancaria |
-| `ACTUALIZAR` | Cambiar contraseña, cambiar rol, Editar categoría, Editar proveedor, Editar cuenta bancaria |
-| `ELIMINAR`   | Desactivar usuario, Eliminar categoría, Eliminar proveedor, Eliminar cuenta bancaria |
+| `INSERTAR`   | Crear usuario, Crear categoría, Crear proveedor, Crear cuenta bancaria, Crear producto |
+| `ACTUALIZAR` | Cambiar contraseña, cambiar rol, Editar categoría, Editar proveedor, Editar cuenta bancaria, Editar producto |
+| `ELIMINAR`   | Desactivar usuario, Eliminar categoría, Eliminar proveedor, Eliminar cuenta bancaria, Eliminar producto |
 
 ### Respuestas de error
 
@@ -1122,5 +1122,212 @@ curl -X DELETE http://localhost:3000/api/bank-accounts/1
   "estado": "error",
   "mensaje": "No se pudo eliminar la cuenta bancaria.",
   "detalle": "No se puede eliminar la cuenta 'Banesco USD - Zelle' porque tiene 2 pago(s) asociado(s)."
+}
+```
+
+---
+
+## 📦 Crear Producto
+
+Registra un nuevo producto en el inventario.
+
+| Propiedad | Valor                |
+| --------- | -------------------- |
+| **Ruta**  | `/api/products`      |
+| **Método**| `POST`               |
+| **Roles** | `administrador`, `almacenista` |
+
+### Ejemplo de petición (Body)
+
+```json
+{
+  "codigo_barras": "1234567890123",
+  "nombre": "Harina PAN",
+  "id_categoria": 1,
+  "costo_dolares": 0.85,
+  "precio_dolares": 1.20,
+  "stock_actual": 100,
+  "stock_minimo": 20
+}
+```
+
+*Solo el campo `nombre` es estrictamente obligatorio. El resto tiene valores por defecto o son opcionales.*
+
+### Respuesta exitosa — `201 Created`
+
+```json
+{
+  "estado": "ok",
+  "mensaje": "Producto creado exitosamente.",
+  "producto": {
+    "id": 1,
+    "codigo_barras": "1234567890123",
+    "nombre": "Harina PAN",
+    "id_categoria": 1,
+    "costo_dolares": 0.85,
+    "precio_dolares": 1.2,
+    "stock_actual": 100,
+    "stock_minimo": 20,
+    "esta_activo": true
+  }
+}
+```
+
+### Respuestas de error
+
+**`400 Bad Request`**
+```json
+{
+  "estado": "error",
+  "mensaje": "No se pudo crear el producto.",
+  "detalle": "Ya existe un producto con el código de barras '1234567890123'."
+}
+```
+
+---
+
+## 📦 Listar Productos
+
+Lista los productos con paginación o todos a la vez. Incluye el nombre de su categoría asociada.
+
+| Propiedad | Valor                |
+| --------- | -------------------- |
+| **Ruta**  | `/api/products`      |
+| **Método**| `GET`                |
+| **Roles** | `administrador`, `almacenista`, `cajero` |
+
+### Parámetros de Query
+
+| Parámetro | Tipo    | Default | Descripción                                      |
+| --------- | ------- | ------- | ------------------------------------------------ |
+| `page`    | number  | `1`     | Número de página                                 |
+| `limit`   | number  | `10`    | Cantidad de registros por página (máx. 100)      |
+| `all`     | boolean | `false` | Si es `true`, devuelve todos sin paginación      |
+
+### Ejemplo de petición (con paginación)
+
+```bash
+curl http://localhost:3000/api/products?page=1&limit=10
+```
+
+### Respuesta exitosa con paginación — `200 OK`
+
+```json
+{
+  "estado": "ok",
+  "productos": [
+    {
+      "id": 1,
+      "codigo_barras": "1234567890123",
+      "nombre": "Harina PAN",
+      "id_categoria": 1,
+      "nombre_categoria": "Víveres",
+      "costo_dolares": "0.8500",
+      "precio_dolares": "1.2000",
+      "stock_actual": 100,
+      "stock_minimo": 20,
+      "esta_activo": 1
+    }
+  ],
+  "paginacion": {
+    "total": 1,
+    "pagina": 1,
+    "limite": 10,
+    "totalPaginas": 1
+  }
+}
+```
+
+---
+
+## 📦 Editar Producto
+
+Actualiza los datos de un producto existente.
+
+| Propiedad | Valor                    |
+| --------- | ------------------------ |
+| **Ruta**  | `/api/products/:id`      |
+| **Método**| `PUT`                    |
+| **Roles** | `administrador`, `almacenista` |
+
+### Ejemplo de petición (Body)
+
+```json
+{
+  "precio_dolares": 1.30,
+  "stock_actual": 90
+}
+```
+
+*Todos los campos son opcionales; los que no se envíen conservarán su valor actual.*
+
+### Respuesta exitosa — `200 OK`
+
+```json
+{
+  "estado": "ok",
+  "mensaje": "Producto actualizado exitosamente.",
+  "producto": {
+    "id": 1,
+    "codigo_barras": "1234567890123",
+    "nombre": "Harina PAN",
+    "id_categoria": 1,
+    "costo_dolares": 0.85,
+    "precio_dolares": 1.3,
+    "stock_actual": 90,
+    "stock_minimo": 20,
+    "esta_activo": true
+  }
+}
+```
+
+### Respuestas de error
+
+**`400 Bad Request`**
+```json
+{
+  "estado": "error",
+  "mensaje": "No se pudo actualizar el producto.",
+  "detalle": "La categoría con ID 99 no existe."
+}
+```
+
+---
+
+## 📦 Eliminar Producto
+
+Elimina un producto. **Si el producto tiene historial en compras o ventas, la base de datos no permitirá su eliminación física por integridad y deberás modificar su estado a inactivo (PUT).**
+
+| Propiedad | Valor                    |
+| --------- | ------------------------ |
+| **Ruta**  | `/api/products/:id`      |
+| **Método**| `DELETE`                 |
+| **Roles** | `administrador`, `almacenista` |
+
+### Ejemplo de petición
+
+```bash
+curl -X DELETE http://localhost:3000/api/products/1
+```
+
+### Respuesta exitosa — `200 OK`
+
+```json
+{
+  "estado": "ok",
+  "id": 1,
+  "nombre": "Harina PAN",
+  "mensaje": "Producto eliminado correctamente."
+}
+```
+
+### Respuestas de error
+
+**`400 Bad Request`** (Tiene historial de compras/ventas)
+```json
+{
+  "estado": "error",
+  "mensaje": "No se pudo eliminar el producto.",
+  "detalle": "No se puede eliminar el producto 'Harina PAN' porque está registrado en 2 venta(s). Por favor, desactívelo en su lugar."
 }
 ```

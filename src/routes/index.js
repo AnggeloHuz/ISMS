@@ -7,6 +7,7 @@ import auditRoutes from './audit.routes.js';
 import categoryRoutes from './category.routes.js';
 import supplierRoutes from './supplier.routes.js';
 import bankAccountRoutes from './bankAccount.routes.js';
+import productRoutes from './product.routes.js';
 
 const router = Router();
 
@@ -19,6 +20,7 @@ router.use('/audit', auditRoutes);
 router.use('/categories', categoryRoutes);
 router.use('/suppliers', supplierRoutes);
 router.use('/bank-accounts', bankAccountRoutes);
+router.use('/products', productRoutes);
 
 export default router;
 
