@@ -469,13 +469,13 @@ curl http://localhost:3000/api/audit?page=1&limit=10
 
 ### Operaciones registradas
 
-| Operación    | Endpoints que la generan      |
-| ------------ | ----------------------------- |
-| `ACCESO`     | Login, Backup                 |
-| `SALIDA`     | Logout                        |
-| `INSERTAR`   | Crear usuario                 |
-| `ACTUALIZAR` | Cambiar contraseña, cambiar rol |
-| `ELIMINAR`   | Desactivar usuario            |
+| Operación    | Endpoints que la generan                  |
+| ------------ | ----------------------------------------- |
+| `ACCESO`     | Login, Backup                             |
+| `SALIDA`     | Logout                                    |
+| `INSERTAR`   | Crear usuario, Crear categoría            |
+| `ACTUALIZAR` | Cambiar contraseña, cambiar rol, Editar categoría |
+| `ELIMINAR`   | Desactivar usuario, Eliminar categoría    |
 
 ### Respuestas de error
 
@@ -485,5 +485,219 @@ curl http://localhost:3000/api/audit?page=1&limit=10
   "estado": "error",
   "mensaje": "No se pudo obtener la bitácora de auditoría.",
   "detalle": "La página 5 no existe. Solo hay 1 página(s) disponible(s)."
+}
+```
+
+---
+
+## 📂 Crear Categoría
+
+Crea una nueva categoría de productos.
+
+| Propiedad | Valor                |
+| --------- | -------------------- |
+| **Ruta**  | `/api/categories`    |
+| **Método**| `POST`               |
+| **Roles** | `administrador`      |
+
+### Ejemplo de petición (Body)
+
+```json
+{
+  "nombre": "Electrónica",
+  "descripcion": "Dispositivos y componentes electrónicos"
+}
+```
+
+*El campo `descripcion` es opcional.*
+
+### Respuesta exitosa — `201 Created`
+
+```json
+{
+  "estado": "ok",
+  "mensaje": "Categoría creada exitosamente.",
+  "categoria": {
+    "id": 1,
+    "nombre": "Electrónica",
+    "descripcion": "Dispositivos y componentes electrónicos"
+  }
+}
+```
+
+### Respuestas de error
+
+**`400 Bad Request`**
+```json
+{
+  "estado": "error",
+  "mensaje": "No se pudo crear la categoría.",
+  "detalle": "Ya existe una categoría con el nombre 'Electrónica'."
+}
+```
+
+---
+
+## 📂 Listar Categorías
+
+Lista categorías con paginación o todas de una vez.
+
+| Propiedad | Valor                |
+| --------- | -------------------- |
+| **Ruta**  | `/api/categories`    |
+| **Método**| `GET`                |
+| **Roles** | `administrador`      |
+
+### Parámetros de Query
+
+| Parámetro | Tipo    | Default | Descripción                                      |
+| --------- | ------- | ------- | ------------------------------------------------ |
+| `page`    | number  | `1`     | Número de página                                 |
+| `limit`   | number  | `10`    | Cantidad de registros por página (máx. 100)      |
+| `all`     | boolean | `false` | Si es `true`, devuelve todas sin paginación      |
+
+### Ejemplo de petición (con paginación)
+
+```bash
+curl http://localhost:3000/api/categories?page=1&limit=10
+```
+
+### Ejemplo de petición (todas)
+
+```bash
+curl http://localhost:3000/api/categories?all=true
+```
+
+### Respuesta exitosa con paginación — `200 OK`
+
+```json
+{
+  "estado": "ok",
+  "categorias": [
+    {
+      "id": 1,
+      "nombre": "Electrónica",
+      "descripcion": "Dispositivos y componentes electrónicos"
+    }
+  ],
+  "paginacion": {
+    "total": 1,
+    "pagina": 1,
+    "limite": 10,
+    "totalPaginas": 1
+  }
+}
+```
+
+### Respuesta exitosa sin paginación (`all=true`) — `200 OK`
+
+```json
+{
+  "estado": "ok",
+  "categorias": [
+    {
+      "id": 1,
+      "nombre": "Electrónica",
+      "descripcion": "Dispositivos y componentes electrónicos"
+    }
+  ],
+  "total": 1
+}
+```
+
+---
+
+## 📂 Editar Categoría
+
+Actualiza el nombre y/o descripción de una categoría existente.
+
+| Propiedad | Valor                    |
+| --------- | ------------------------ |
+| **Ruta**  | `/api/categories/:id`    |
+| **Método**| `PUT`                    |
+| **Roles** | `administrador`          |
+
+### Ejemplo de petición (Body)
+
+```json
+{
+  "nombre": "Electrónica y Tecnología",
+  "descripcion": "Dispositivos electrónicos y accesorios tecnológicos"
+}
+```
+
+*Ambos campos son opcionales; los que no se envíen conservan su valor actual.*
+
+### Respuesta exitosa — `200 OK`
+
+```json
+{
+  "estado": "ok",
+  "mensaje": "Categoría actualizada exitosamente.",
+  "categoria": {
+    "id": 1,
+    "nombre": "Electrónica y Tecnología",
+    "descripcion": "Dispositivos electrónicos y accesorios tecnológicos"
+  }
+}
+```
+
+### Respuestas de error
+
+**`400 Bad Request`**
+```json
+{
+  "estado": "error",
+  "mensaje": "No se pudo actualizar la categoría.",
+  "detalle": "La categoría no fue encontrada."
+}
+```
+
+---
+
+## 📂 Eliminar Categoría
+
+Elimina una categoría de forma permanente. No se puede eliminar si tiene productos asociados.
+
+| Propiedad | Valor                    |
+| --------- | ------------------------ |
+| **Ruta**  | `/api/categories/:id`    |
+| **Método**| `DELETE`                 |
+| **Roles** | `administrador`          |
+
+### Ejemplo de petición
+
+```bash
+curl -X DELETE http://localhost:3000/api/categories/1
+```
+
+### Respuesta exitosa — `200 OK`
+
+```json
+{
+  "estado": "ok",
+  "id": 1,
+  "nombre": "Electrónica",
+  "mensaje": "Categoría eliminada correctamente."
+}
+```
+
+### Respuestas de error
+
+**`400 Bad Request`** (Categoría no encontrada)
+```json
+{
+  "estado": "error",
+  "mensaje": "No se pudo eliminar la categoría.",
+  "detalle": "La categoría no fue encontrada."
+}
+```
+
+**`400 Bad Request`** (Tiene productos asociados)
+```json
+{
+  "estado": "error",
+  "mensaje": "No se pudo eliminar la categoría.",
+  "detalle": "No se puede eliminar la categoría 'Electrónica' porque tiene 3 producto(s) asociado(s)."
 }
 ```
