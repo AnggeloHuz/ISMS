@@ -473,9 +473,9 @@ curl http://localhost:3000/api/audit?page=1&limit=10
 | ------------ | ----------------------------------------- |
 | `ACCESO`     | Login, Backup                             |
 | `SALIDA`     | Logout                                    |
-| `INSERTAR`   | Crear usuario, Crear categoría            |
-| `ACTUALIZAR` | Cambiar contraseña, cambiar rol, Editar categoría |
-| `ELIMINAR`   | Desactivar usuario, Eliminar categoría    |
+| `INSERTAR`   | Crear usuario, Crear categoría, Crear proveedor            |
+| `ACTUALIZAR` | Cambiar contraseña, cambiar rol, Editar categoría, Editar proveedor |
+| `ELIMINAR`   | Desactivar usuario, Eliminar categoría, Eliminar proveedor |
 
 ### Respuestas de error
 
@@ -699,5 +699,237 @@ curl -X DELETE http://localhost:3000/api/categories/1
   "estado": "error",
   "mensaje": "No se pudo eliminar la categoría.",
   "detalle": "No se puede eliminar la categoría 'Electrónica' porque tiene 3 producto(s) asociado(s)."
+}
+```
+
+---
+
+## 🏢 Crear Proveedor
+
+Registra un nuevo proveedor en el sistema.
+
+| Propiedad | Valor                |
+| --------- | -------------------- |
+| **Ruta**  | `/api/suppliers`     |
+| **Método**| `POST`               |
+| **Roles** | `administrador`      |
+
+### Ejemplo de petición (Body)
+
+```json
+{
+  "rif": "J-12345678-9",
+  "razon_social": "Distribuidora El Centro C.A.",
+  "nombre_contacto": "Carlos Méndez",
+  "telefono": "0414-1234567",
+  "direccion": "Av. Principal, Centro Comercial, Local 5"
+}
+```
+
+*Los campos `nombre_contacto`, `telefono` y `direccion` son opcionales.*
+
+### Respuesta exitosa — `201 Created`
+
+```json
+{
+  "estado": "ok",
+  "mensaje": "Proveedor creado exitosamente.",
+  "proveedor": {
+    "id": 1,
+    "rif": "J-12345678-9",
+    "razon_social": "Distribuidora El Centro C.A.",
+    "nombre_contacto": "Carlos Méndez",
+    "telefono": "0414-1234567",
+    "direccion": "Av. Principal, Centro Comercial, Local 5"
+  }
+}
+```
+
+### Respuestas de error
+
+**`400 Bad Request`**
+```json
+{
+  "estado": "error",
+  "mensaje": "No se pudo crear el proveedor.",
+  "detalle": "Ya existe un proveedor con el RIF 'J-12345678-9'."
+}
+```
+
+---
+
+## 🏢 Listar Proveedores
+
+Lista proveedores con paginación o todos de una vez.
+
+| Propiedad | Valor                |
+| --------- | -------------------- |
+| **Ruta**  | `/api/suppliers`     |
+| **Método**| `GET`                |
+| **Roles** | `administrador`      |
+
+### Parámetros de Query
+
+| Parámetro | Tipo    | Default | Descripción                                      |
+| --------- | ------- | ------- | ------------------------------------------------ |
+| `page`    | number  | `1`     | Número de página                                 |
+| `limit`   | number  | `10`    | Cantidad de registros por página (máx. 100)      |
+| `all`     | boolean | `false` | Si es `true`, devuelve todos sin paginación      |
+
+### Ejemplo de petición (con paginación)
+
+```bash
+curl http://localhost:3000/api/suppliers?page=1&limit=10
+```
+
+### Ejemplo de petición (todos)
+
+```bash
+curl http://localhost:3000/api/suppliers?all=true
+```
+
+### Respuesta exitosa con paginación — `200 OK`
+
+```json
+{
+  "estado": "ok",
+  "proveedores": [
+    {
+      "id": 1,
+      "rif": "J-12345678-9",
+      "razon_social": "Distribuidora El Centro C.A.",
+      "nombre_contacto": "Carlos Méndez",
+      "telefono": "0414-1234567",
+      "direccion": "Av. Principal, Centro Comercial, Local 5",
+      "fecha_registro": "2026-03-04T14:00:00.000Z"
+    }
+  ],
+  "paginacion": {
+    "total": 1,
+    "pagina": 1,
+    "limite": 10,
+    "totalPaginas": 1
+  }
+}
+```
+
+### Respuesta exitosa sin paginación (`all=true`) — `200 OK`
+
+```json
+{
+  "estado": "ok",
+  "proveedores": [
+    {
+      "id": 1,
+      "rif": "J-12345678-9",
+      "razon_social": "Distribuidora El Centro C.A.",
+      "nombre_contacto": "Carlos Méndez",
+      "telefono": "0414-1234567",
+      "direccion": "Av. Principal, Centro Comercial, Local 5",
+      "fecha_registro": "2026-03-04T14:00:00.000Z"
+    }
+  ],
+  "total": 1
+}
+```
+
+---
+
+## 🏢 Editar Proveedor
+
+Actualiza los datos de un proveedor existente.
+
+| Propiedad | Valor                    |
+| --------- | ------------------------ |
+| **Ruta**  | `/api/suppliers/:id`     |
+| **Método**| `PUT`                    |
+| **Roles** | `administrador`          |
+
+### Ejemplo de petición (Body)
+
+```json
+{
+  "razon_social": "Distribuidora El Centro Plus C.A.",
+  "telefono": "0412-9876543"
+}
+```
+
+*Todos los campos son opcionales; los que no se envíen conservan su valor actual.*
+
+### Respuesta exitosa — `200 OK`
+
+```json
+{
+  "estado": "ok",
+  "mensaje": "Proveedor actualizado exitosamente.",
+  "proveedor": {
+    "id": 1,
+    "rif": "J-12345678-9",
+    "razon_social": "Distribuidora El Centro Plus C.A.",
+    "nombre_contacto": "Carlos Méndez",
+    "telefono": "0412-9876543",
+    "direccion": "Av. Principal, Centro Comercial, Local 5"
+  }
+}
+```
+
+### Respuestas de error
+
+**`400 Bad Request`**
+```json
+{
+  "estado": "error",
+  "mensaje": "No se pudo actualizar el proveedor.",
+  "detalle": "El proveedor no fue encontrado."
+}
+```
+
+---
+
+## 🏢 Eliminar Proveedor
+
+Elimina un proveedor de forma permanente. No se puede eliminar si tiene compras asociadas.
+
+| Propiedad | Valor                    |
+| --------- | ------------------------ |
+| **Ruta**  | `/api/suppliers/:id`     |
+| **Método**| `DELETE`                 |
+| **Roles** | `administrador`          |
+
+### Ejemplo de petición
+
+```bash
+curl -X DELETE http://localhost:3000/api/suppliers/1
+```
+
+### Respuesta exitosa — `200 OK`
+
+```json
+{
+  "estado": "ok",
+  "id": 1,
+  "rif": "J-12345678-9",
+  "razon_social": "Distribuidora El Centro C.A.",
+  "mensaje": "Proveedor eliminado correctamente."
+}
+```
+
+### Respuestas de error
+
+**`400 Bad Request`** (Proveedor no encontrado)
+```json
+{
+  "estado": "error",
+  "mensaje": "No se pudo eliminar el proveedor.",
+  "detalle": "El proveedor no fue encontrado."
+}
+```
+
+**`400 Bad Request`** (Tiene compras asociadas)
+```json
+{
+  "estado": "error",
+  "mensaje": "No se pudo eliminar el proveedor.",
+  "detalle": "No se puede eliminar el proveedor 'Distribuidora El Centro C.A.' porque tiene 5 compra(s) asociada(s)."
 }
 ```
