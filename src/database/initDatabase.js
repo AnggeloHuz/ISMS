@@ -97,6 +97,7 @@ const initDatabase = async () => {
         id_proveedor INT,
         id_usuario INT,
         total_compra_dolares DECIMAL(19,4) NOT NULL,
+        total_compra_bolivares DECIMAL(19,4) NOT NULL,
         fecha_compra TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         observaciones TEXT,
         CONSTRAINT fk_compra_proveedor FOREIGN KEY (id_proveedor) REFERENCES proveedores(id),
@@ -147,20 +148,8 @@ const initDatabase = async () => {
       );
 
       -- ==========================================
-      -- KARDEX Y BITÁCORA DE AUDITORÍA
+      -- BITÁCORA DE AUDITORÍA
       -- ==========================================
-
-      CREATE TABLE IF NOT EXISTS movimientos_inventario (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        id_producto INT,
-        tipo_movimiento ENUM('compra', 'venta', 'ajuste', 'merma') NOT NULL,
-        cantidad INT NOT NULL,
-        id_referencia INT,
-        id_usuario INT,
-        fecha_movimiento TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        CONSTRAINT fk_mov_producto FOREIGN KEY (id_producto) REFERENCES productos(id),
-        CONSTRAINT fk_mov_usuario FOREIGN KEY (id_usuario) REFERENCES usuarios(id)
-      );
 
       CREATE TABLE IF NOT EXISTS bitacora_auditoria (
         id BIGINT AUTO_INCREMENT PRIMARY KEY,

@@ -473,9 +473,9 @@ curl http://localhost:3000/api/audit?page=1&limit=10
 | ------------ | ----------------------------------------- |
 | `ACCESO`     | Login, Backup                             |
 | `SALIDA`     | Logout                                    |
-| `INSERTAR`   | Crear usuario, Crear categoría, Crear proveedor            |
-| `ACTUALIZAR` | Cambiar contraseña, cambiar rol, Editar categoría, Editar proveedor |
-| `ELIMINAR`   | Desactivar usuario, Eliminar categoría, Eliminar proveedor |
+| `INSERTAR`   | Crear usuario, Crear categoría, Crear proveedor, Crear cuenta bancaria |
+| `ACTUALIZAR` | Cambiar contraseña, cambiar rol, Editar categoría, Editar proveedor, Editar cuenta bancaria |
+| `ELIMINAR`   | Desactivar usuario, Eliminar categoría, Eliminar proveedor, Eliminar cuenta bancaria |
 
 ### Respuestas de error
 
@@ -931,5 +931,196 @@ curl -X DELETE http://localhost:3000/api/suppliers/1
   "estado": "error",
   "mensaje": "No se pudo eliminar el proveedor.",
   "detalle": "No se puede eliminar el proveedor 'Distribuidora El Centro C.A.' porque tiene 5 compra(s) asociada(s)."
+}
+```
+
+---
+
+## 🏦 Registrar Cuenta Bancaria
+
+Crea una nueva cuenta bancaria para gestionar saldos y pagos.
+
+| Propiedad | Valor                |
+| --------- | -------------------- |
+| **Ruta**  | `/api/bank-accounts` |
+| **Método**| `POST`               |
+| **Roles** | `administrador`      |
+
+### Ejemplo de petición (Body)
+
+```json
+{
+  "nombre_cuenta": "Banesco USD - Zelle",
+  "moneda": "USD",
+  "saldo_actual": 1500.50
+}
+```
+
+*Monedas permitidas: `USD`, `VES`. El saldo es opcional (por defecto es 0).*
+
+### Respuesta exitosa — `201 Created`
+
+```json
+{
+  "estado": "ok",
+  "mensaje": "Cuenta bancaria registrada exitosamente.",
+  "cuenta": {
+    "id": 1,
+    "nombre_cuenta": "Banesco USD - Zelle",
+    "moneda": "USD",
+    "saldo_actual": 1500.5,
+    "esta_activa": true
+  }
+}
+```
+
+### Respuestas de error
+
+**`400 Bad Request`**
+```json
+{
+  "estado": "error",
+  "mensaje": "No se pudo registrar la cuenta bancaria.",
+  "detalle": "Ya existe una cuenta bancaria con el nombre 'Banesco USD - Zelle'."
+}
+```
+
+---
+
+## 🏦 Listar Cuentas Bancarias
+
+Lista las cuentas bancarias con paginación o todas de una vez.
+
+| Propiedad | Valor                |
+| --------- | -------------------- |
+| **Ruta**  | `/api/bank-accounts` |
+| **Método**| `GET`                |
+| **Roles** | `administrador`      |
+
+### Parámetros de Query
+
+| Parámetro | Tipo    | Default | Descripción                                      |
+| --------- | ------- | ------- | ------------------------------------------------ |
+| `page`    | number  | `1`     | Número de página                                 |
+| `limit`   | number  | `10`    | Cantidad de registros por página (máx. 100)      |
+| `all`     | boolean | `false` | Si es `true`, devuelve todas sin paginación      |
+
+### Ejemplo de petición (con paginación)
+
+```bash
+curl http://localhost:3000/api/bank-accounts?page=1&limit=10
+```
+
+### Ejemplo de petición (todas)
+
+```bash
+curl http://localhost:3000/api/bank-accounts?all=true
+```
+
+### Respuesta exitosa sin paginación (`all=true`) — `200 OK`
+
+```json
+{
+  "estado": "ok",
+  "cuentas": [
+    {
+      "id": 1,
+      "nombre_cuenta": "Banesco USD - Zelle",
+      "moneda": "USD",
+      "saldo_actual": "1500.5000",
+      "esta_activa": 1
+    }
+  ],
+  "total": 1
+}
+```
+
+---
+
+## 🏦 Editar Cuenta Bancaria
+
+Actualiza el nombre, la moneda o el estado activo de una cuenta.
+
+| Propiedad | Valor                    |
+| --------- | ------------------------ |
+| **Ruta**  | `/api/bank-accounts/:id` |
+| **Método**| `PUT`                    |
+| **Roles** | `administrador`          |
+
+### Ejemplo de petición (Body)
+
+```json
+{
+  "nombre_cuenta": "Banesco USD",
+  "esta_activa": false
+}
+```
+
+*Todos los campos son opcionales; los que no se envíen conservan su valor actual.*
+
+### Respuesta exitosa — `200 OK`
+
+```json
+{
+  "estado": "ok",
+  "mensaje": "Cuenta bancaria actualizada exitosamente.",
+  "cuenta": {
+    "id": 1,
+    "nombre_cuenta": "Banesco USD",
+    "moneda": "USD",
+    "saldo_actual": "1500.5000",
+    "esta_activa": false
+  }
+}
+```
+
+### Respuestas de error
+
+**`400 Bad Request`**
+```json
+{
+  "estado": "error",
+  "mensaje": "No se pudo actualizar la cuenta bancaria.",
+  "detalle": "Ya existe otra cuenta bancaria con el nombre 'Banesco USD'."
+}
+```
+
+---
+
+## 🏦 Eliminar Cuenta Bancaria
+
+Elimina permanentemente una cuenta bancaria. No se puede eliminar si tiene pagos asociados.
+
+| Propiedad | Valor                    |
+| --------- | ------------------------ |
+| **Ruta**  | `/api/bank-accounts/:id` |
+| **Método**| `DELETE`                 |
+| **Roles** | `administrador`          |
+
+### Ejemplo de petición
+
+```bash
+curl -X DELETE http://localhost:3000/api/bank-accounts/1
+```
+
+### Respuesta exitosa — `200 OK`
+
+```json
+{
+  "estado": "ok",
+  "id": 1,
+  "nombre_cuenta": "Banesco USD - Zelle",
+  "mensaje": "Cuenta bancaria eliminada correctamente."
+}
+```
+
+### Respuestas de error
+
+**`400 Bad Request`** (Tiene pagos asociados)
+```json
+{
+  "estado": "error",
+  "mensaje": "No se pudo eliminar la cuenta bancaria.",
+  "detalle": "No se puede eliminar la cuenta 'Banesco USD - Zelle' porque tiene 2 pago(s) asociado(s)."
 }
 ```
