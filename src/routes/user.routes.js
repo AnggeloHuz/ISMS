@@ -8,9 +8,39 @@ const router = Router();
 // ─── Gestión de Usuarios ─────────────────────────
 
 /**
- * GET /api/users?page=1&limit=10
- * Lista todos los usuarios con paginación.
- * Protegido: Requiere token JWT y rol 'administrador'.
+ * @swagger
+ * tags:
+ *   name: Usuarios
+ *   description: Gestión de usuarios del sistema
+ */
+
+/**
+ * @swagger
+ * /users:
+ *   get:
+ *     summary: Lista todos los usuarios con paginación
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Número de página
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Cantidad de registros por página
+ *     responses:
+ *       200:
+ *         description: Lista de usuarios obtenida exitosamente.
+ *       401:
+ *         description: No autorizado.
+ *       403:
+ *         description: Acceso denegado (requiere rol de administrador).
  */
 router.get(
     '/',
@@ -43,9 +73,39 @@ router.get(
 );
 
 /**
- * POST /api/users
- * Crea un nuevo usuario en el sistema.
- * Protegido: Requiere token JWT y el rol de 'administrador'.
+ * @swagger
+ * /users:
+ *   post:
+ *     summary: Crea un nuevo usuario
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - nombre_usuario
+ *               - clave_acceso
+ *               - rol
+ *             properties:
+ *               nombre_usuario:
+ *                 type: string
+ *               clave_acceso:
+ *                 type: string
+ *               nombre_completo:
+ *                 type: string
+ *               rol:
+ *                 type: string
+ *                 enum: [administrador, cajero, almacenista]
+ *     responses:
+ *       201:
+ *         description: Usuario creado exitosamente.
+ *       400:
+ *         description: Error de validación (ej. usuario ya existe).
  */
 router.post(
     '/',
@@ -98,9 +158,37 @@ router.post(
 );
 
 /**
- * PATCH /api/users/:id/password
- * Actualiza la contraseña de un usuario.
- * Protegido: Requiere token JWT y rol 'administrador'.
+ * @swagger
+ * /users/{id}/password:
+ *   patch:
+ *     summary: Actualiza la contraseña de un usuario
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del usuario
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - nueva_clave
+ *             properties:
+ *               nueva_clave:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Contraseña actualizada correctamente.
+ *       400:
+ *         description: Error de validación (ej. contraseña muy corta).
  */
 router.patch(
     '/:id/password',
@@ -148,9 +236,38 @@ router.patch(
 );
 
 /**
- * PATCH /api/users/:id/role
- * Actualiza el rol de un usuario.
- * Protegido: Requiere token JWT y rol 'administrador'.
+ * @swagger
+ * /users/{id}/role:
+ *   patch:
+ *     summary: Actualiza el rol de un usuario
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del usuario
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - nuevo_rol
+ *             properties:
+ *               nuevo_rol:
+ *                 type: string
+ *                 enum: [administrador, cajero, almacenista]
+ *     responses:
+ *       200:
+ *         description: Rol actualizado exitosamente.
+ *       400:
+ *         description: Rol inválido o usuario no encontrado.
  */
 router.patch(
     '/:id/role',
@@ -200,9 +317,26 @@ router.patch(
 );
 
 /**
- * DELETE /api/users/:id
- * Desactiva un usuario (soft delete).
- * Protegido: Requiere token JWT y rol 'administrador'.
+ * @swagger
+ * /users/{id}:
+ *   delete:
+ *     summary: Desactiva un usuario (soft delete)
+ *     tags: [Usuarios]
+ *     security:
+ *       - bearerAuth: []
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID del usuario
+ *     responses:
+ *       200:
+ *         description: Usuario desactivado correctamente.
+ *       400:
+ *         description: No se puede eliminar a sí mismo o ya está desactivado.
  */
 router.delete(
     '/:id',

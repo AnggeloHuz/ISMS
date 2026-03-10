@@ -8,10 +8,37 @@ const router = Router();
 // ─── Gestión de Configuraciones ───────────────────────
 
 /**
- * GET /api/configurations?page=1&limit=10
- * GET /api/configurations?all=true
- * Lista configuraciones con paginación o todas de una vez.
- * Protegido: Requiere token JWT y rol 'administrador'.
+ * @swagger
+ * tags:
+ *   name: Configuraciones
+ *   description: Parámetros globales del sistema
+ */
+
+/**
+ * @swagger
+ * /configurations:
+ *   get:
+ *     summary: Lista configuraciones
+ *     tags: [Configuraciones]
+ *     security:
+ *       - bearerAuth: []
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: all
+ *         schema:
+ *           type: boolean
+ *     responses:
+ *       200:
+ *         description: Ok
  */
 router.get(
     '/',
@@ -46,9 +73,31 @@ router.get(
 );
 
 /**
- * POST /api/configurations
- * Crea una nueva configuración.
- * Protegido: Requiere token JWT y rol 'administrador'.
+ * @swagger
+ * /configurations:
+ *   post:
+ *     summary: Agrega una nueva variable de configuración
+ *     tags: [Configuraciones]
+ *     security:
+ *       - bearerAuth: []
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - clave_configuracion
+ *               - valor_configuracion
+ *             properties:
+ *               clave_configuracion:
+ *                 type: string
+ *               valor_configuracion:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Ok
  */
 router.post(
     '/',
@@ -95,9 +144,32 @@ router.post(
 );
 
 /**
- * PUT /api/configurations/:clave_configuracion
- * Actualiza una configuración existente.
- * Protegido: Requiere token JWT y rol 'administrador'.
+ * @swagger
+ * /configurations/{clave_configuracion}:
+ *   put:
+ *     summary: Actualiza el valor de una configuración
+ *     tags: [Configuraciones]
+ *     security:
+ *       - bearerAuth: []
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: clave_configuracion
+ *         required: true
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - valor_configuracion
+ *             properties:
+ *               valor_configuracion:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Ok
  */
 router.put(
     '/:clave_configuracion',
@@ -149,9 +221,21 @@ router.put(
 );
 
 /**
- * DELETE /api/configurations/:clave_configuracion
- * Elimina una configuración.
- * Protegido: Requiere token JWT y rol 'administrador'.
+ * @swagger
+ * /configurations/{clave_configuracion}:
+ *   delete:
+ *     summary: Elimina una variable de configuración
+ *     tags: [Configuraciones]
+ *     security:
+ *       - bearerAuth: []
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: clave_configuracion
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Ok
  */
 router.delete(
     '/:clave_configuracion',

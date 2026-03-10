@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser';
 import env from './config/env.js';
 import routes from './routes/index.js';
 import { notFoundHandler, globalErrorHandler } from './middlewares/errorHandler.js';
+import { setupSwagger } from './config/swagger.js';
 
 const app = express();
 
@@ -23,6 +24,9 @@ app.use(morgan('dev'));
 
 // ─── Rutas ────────────────────────────────────────
 app.use('/api', routes);
+
+// ─── Documentación ────────────────────────────────
+setupSwagger(app);
 
 // ─── Manejo de Errores ────────────────────────────
 app.use(notFoundHandler);

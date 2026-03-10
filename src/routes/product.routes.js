@@ -8,11 +8,37 @@ const router = Router();
 // ─── Gestión de Productos ────────────────────────
 
 /**
- * GET /api/products?page=1&limit=10
- * GET /api/products?all=true
- * Lista productos con paginación o todos de una vez.
- * Protegido: Requiere token JWT y rol 'administrador' o 'almacenista' (o 'cajero' solo lectura si quieres).
- * Aquí se requiere administrador o almacenista.
+ * @swagger
+ * tags:
+ *   name: Productos
+ *   description: Gestión del inventario de productos
+ */
+
+/**
+ * @swagger
+ * /products:
+ *   get:
+ *     summary: Lista productos
+ *     tags: [Productos]
+ *     security:
+ *       - bearerAuth: []
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: all
+ *         schema:
+ *           type: boolean
+ *     responses:
+ *       200:
+ *         description: Ok
  */
 router.get(
     '/',
@@ -45,9 +71,43 @@ router.get(
 );
 
 /**
- * POST /api/products
- * Registra un nuevo producto.
- * Protegido: Requiere token JWT y rol 'administrador' o 'almacenista'.
+ * @swagger
+ * /products:
+ *   post:
+ *     summary: Registra un nuevo producto
+ *     tags: [Productos]
+ *     security:
+ *       - bearerAuth: []
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - nombre
+ *               - id_categoria
+ *               - costo_dolares
+ *               - precio_dolares
+ *             properties:
+ *               codigo_barras:
+ *                 type: string
+ *               nombre:
+ *                 type: string
+ *               id_categoria:
+ *                 type: integer
+ *               costo_dolares:
+ *                 type: number
+ *               precio_dolares:
+ *                 type: number
+ *               stock_actual:
+ *                 type: integer
+ *               stock_minimo:
+ *                 type: integer
+ *     responses:
+ *       201:
+ *         description: Ok
  */
 router.post(
     '/',
@@ -91,9 +151,42 @@ router.post(
 );
 
 /**
- * PUT /api/products/:id
- * Actualiza un producto existente.
- * Protegido: Requiere token JWT y rol 'administrador' o 'almacenista'.
+ * @swagger
+ * /products/{id}:
+ *   put:
+ *     summary: Actualiza un producto existente
+ *     tags: [Productos]
+ *     security:
+ *       - bearerAuth: []
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               codigo_barras:
+ *                 type: string
+ *               nombre:
+ *                 type: string
+ *               id_categoria:
+ *                 type: integer
+ *               costo_dolares:
+ *                 type: number
+ *               precio_dolares:
+ *                 type: number
+ *               stock_minimo:
+ *                 type: integer
+ *               esta_activo:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Ok
  */
 router.put(
     '/:id',
@@ -153,9 +246,21 @@ router.put(
 );
 
 /**
- * DELETE /api/products/:id
- * Elimina un producto de forma física (si no tiene historial).
- * Protegido: Requiere token JWT y rol 'administrador' o 'almacenista'.
+ * @swagger
+ * /products/{id}:
+ *   delete:
+ *     summary: Elimina un producto lógicamente o físicamente si no tiene historial
+ *     tags: [Productos]
+ *     security:
+ *       - bearerAuth: []
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Ok
  */
 router.delete(
     '/:id',

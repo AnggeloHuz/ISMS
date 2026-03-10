@@ -8,8 +8,33 @@ const router = Router();
 // ─── Gestión de Compras ────────────────────────
 
 /**
- * GET /api/purchases?page=1&limit=10
- * Lista el historial de compras (Paginado).
+ * @swagger
+ * tags:
+ *   name: Compras
+ *   description: Gestión de compras a proveedores
+ */
+
+/**
+ * @swagger
+ * /purchases:
+ *   get:
+ *     summary: Lista el historial de compras
+ *     tags: [Compras]
+ *     security:
+ *       - bearerAuth: []
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Ok
  */
 router.get(
     '/',
@@ -40,8 +65,21 @@ router.get(
 );
 
 /**
- * GET /api/purchases/:id
- * Obtiene todos los detalles de una compra (cabecera, productos, pagos).
+ * @swagger
+ * /purchases/{id}:
+ *   get:
+ *     summary: Obtiene todos los detalles de una compra
+ *     tags: [Compras]
+ *     security:
+ *       - bearerAuth: []
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Ok
  */
 router.get(
     '/:id',
@@ -72,8 +110,57 @@ router.get(
 );
 
 /**
- * POST /api/purchases
- * Registra una compra. Ejecuta transacción: actualiza stock y resta saldos.
+ * @swagger
+ * /purchases:
+ *   post:
+ *     summary: Registra una compra
+ *     tags: [Compras]
+ *     security:
+ *       - bearerAuth: []
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - id_proveedor
+ *               - tasa_cambio_usada
+ *               - productos
+ *               - pagos
+ *             properties:
+ *               id_proveedor:
+ *                 type: integer
+ *               numero_factura:
+ *                 type: string
+ *               tasa_cambio_usada:
+ *                 type: number
+ *               productos:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     id_producto:
+ *                       type: integer
+ *                     cantidad:
+ *                       type: integer
+ *                     costo_unitario_dolares:
+ *                       type: number
+ *               pagos:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     id_cuenta_bancaria:
+ *                       type: integer
+ *                     monto_pagado:
+ *                       type: number
+ *                     referencia:
+ *                       type: string
+ *     responses:
+ *       201:
+ *         description: Compra registrada y procesada (Stocks y Pagos)
  */
 router.post(
     '/',

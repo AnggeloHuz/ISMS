@@ -8,8 +8,39 @@ const router = Router();
 // ─── Autenticación ───────────────────────────────
 
 /**
- * POST /api/auth/login
- * Inicia sesión y devuelve una cookie de autenticación.
+ * @swagger
+ * tags:
+ *   name: Autenticación
+ *   description: Endpoints para iniciar y cerrar sesión
+ */
+
+/**
+ * @swagger
+ * /auth/login:
+ *   post:
+ *     summary: Inicia sesión
+ *     tags: [Autenticación]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - nombre_usuario
+ *               - clave_acceso
+ *             properties:
+ *               nombre_usuario:
+ *                 type: string
+ *                 example: admin
+ *               clave_acceso:
+ *                 type: string
+ *                 example: secreto123
+ *     responses:
+ *       200:
+ *         description: Inicio de sesión exitoso. Retorna el usuario y la cookie con el token.
+ *       401:
+ *         description: Credenciales inválidas.
  */
 router.post('/login', async (req, res) => {
     try {
@@ -56,9 +87,17 @@ router.post('/login', async (req, res) => {
 });
 
 /**
- * POST /api/auth/logout
- * Cierra sesión eliminando la cookie de autenticación.
- * Se usa verifyToken de forma opcional para identificar al usuario en la bitácora.
+ * @swagger
+ * /auth/logout:
+ *   post:
+ *     summary: Cierra sesión
+ *     tags: [Autenticación]
+ *     security:
+ *       - bearerAuth: []
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Cierre de sesión exitoso. Elimina la cookie de autenticación.
  */
 router.post('/logout', verifyToken, async (req, res) => {
     const { cookieOptions } = logout();

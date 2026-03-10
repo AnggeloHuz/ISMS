@@ -10,6 +10,7 @@ import bankAccountRoutes from './bankAccount.routes.js';
 import productRoutes from './product.routes.js';
 import purchaseRoutes from './purchase.routes.js';
 import configurationRoutes from './configuration.routes.js';
+import saleRoutes from './sale.routes.js';
 
 const router = Router();
 
@@ -25,6 +26,7 @@ router.use('/bank-accounts', bankAccountRoutes);
 router.use('/products', productRoutes);
 router.use('/purchases', purchaseRoutes);
 router.use('/configurations', configurationRoutes);
+router.use('/sales', saleRoutes);
 
 export default router;
 

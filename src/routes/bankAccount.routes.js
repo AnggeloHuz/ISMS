@@ -8,10 +8,37 @@ const router = Router();
 // ─── Gestión de Cuentas Bancarias ────────────────
 
 /**
- * GET /api/bank-accounts?page=1&limit=10
- * GET /api/bank-accounts?all=true
- * Lista cuentas bancarias con paginación o todas de una vez.
- * Protegido: Requiere token JWT y rol 'administrador'.
+ * @swagger
+ * tags:
+ *   name: Cuentas Bancarias
+ *   description: Gestión de cuentas bancarias
+ */
+
+/**
+ * @swagger
+ * /bank-accounts:
+ *   get:
+ *     summary: Lista cuentas bancarias
+ *     tags: [Cuentas Bancarias]
+ *     security:
+ *       - bearerAuth: []
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: all
+ *         schema:
+ *           type: boolean
+ *     responses:
+ *       200:
+ *         description: Ok
  */
 router.get(
     '/',
@@ -46,9 +73,34 @@ router.get(
 );
 
 /**
- * POST /api/bank-accounts
- * Registra una nueva cuenta bancaria.
- * Protegido: Requiere token JWT y rol 'administrador'.
+ * @swagger
+ * /bank-accounts:
+ *   post:
+ *     summary: Registra una nueva cuenta bancaria
+ *     tags: [Cuentas Bancarias]
+ *     security:
+ *       - bearerAuth: []
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - nombre_cuenta
+ *               - moneda
+ *             properties:
+ *               nombre_cuenta:
+ *                 type: string
+ *               moneda:
+ *                 type: string
+ *                 enum: [USD, VES]
+ *               saldo_actual:
+ *                 type: number
+ *     responses:
+ *       201:
+ *         description: Ok
  */
 router.post(
     '/',
@@ -95,9 +147,35 @@ router.post(
 );
 
 /**
- * PUT /api/bank-accounts/:id
- * Actualiza una cuenta bancaria existente.
- * Protegido: Requiere token JWT y rol 'administrador'.
+ * @swagger
+ * /bank-accounts/{id}:
+ *   put:
+ *     summary: Actualiza una cuenta bancaria
+ *     tags: [Cuentas Bancarias]
+ *     security:
+ *       - bearerAuth: []
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nombre_cuenta:
+ *                 type: string
+ *               moneda:
+ *                 type: string
+ *                 enum: [USD, VES]
+ *               esta_activa:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Ok
  */
 router.put(
     '/:id',
@@ -157,9 +235,21 @@ router.put(
 );
 
 /**
- * DELETE /api/bank-accounts/:id
- * Elimina una cuenta bancaria.
- * Protegido: Requiere token JWT y rol 'administrador'.
+ * @swagger
+ * /bank-accounts/{id}:
+ *   delete:
+ *     summary: Elimina una cuenta bancaria
+ *     tags: [Cuentas Bancarias]
+ *     security:
+ *       - bearerAuth: []
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Ok
  */
 router.delete(
     '/:id',

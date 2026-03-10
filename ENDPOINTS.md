@@ -1525,6 +1525,176 @@ Retorna la información completa de una compra específica: cabecera, productos 
 
 ---
 
+## 🧾 Registrar Venta
+
+Registra una nueva venta de productos. Este endpoint es **transaccional**:
+1. Verifica que los productos existan y tengan stock suficiente.
+2. Calcula automáticamente el total de la venta evaluando el precio de cada producto y la cantidad.
+3. Verifica que la suma total pagada coincida con el total de la venta calculada.
+4. Si los pagos se hacen con una cuenta en bolívares (`VES`), aplica la reconversión basada en la tasa de cambio proporcionada (`tasa_cambio_usada`).
+5. Descuenta el stock de los productos vendidos.
+6. Suma los montos a los saldos totales de las cuentas bancarias usadas.
+7. Registra el histórico de acciones en la bitácora de auditoría.
+
+| Propiedad | Valor                      |
+| --------- | -------------------------- |
+| **Ruta**  | `/api/sales`               |
+| **Método**| `POST`                     |
+| **Roles** | `administrador`, `cajero`  |
+
+### Ejemplo de petición (Body)
+
+```json
+{
+  "tasa_cambio_usada": "45.5000",
+  "productos": [
+    {
+      "id_producto": 1,
+      "cantidad": 2,
+      "precio_unitario_dolares": "1.50"
+    },
+    {
+      "id_producto": 2,
+      "cantidad": 1,
+      "precio_unitario_dolares": "2.00"
+    }
+  ],
+  "pagos": [
+    {
+      "id_cuenta_bancaria": 1,
+      "monto_pagado_dolares": "3.00"
+    },
+    {
+      "id_cuenta_bancaria": 2,
+      "monto_pagado_dolares": "2.00"
+    }
+  ]
+}
+```
+
+*Nota: La suma de `monto_pagado_dolares` en `pagos` debe ser exactamente igual al total de la venta calculado (suma de `cantidad * precio_unitario_dolares`).*
+
+### Respuesta exitosa — `201 Created`
+
+```json
+{
+  "estado": "ok",
+  "id": 1,
+  "total_dolares": "5.00",
+  "total_bolivares": "227.50",
+  "mensaje": "Venta procesada exitosamente e inventario descontado."
+}
+```
+
+---
+
+## 🧾 Listar Ventas
+
+Devuelve el historial de todas las ventas realizadas, paginadas.
+
+| Propiedad | Valor                      |
+| --------- | -------------------------- |
+| **Ruta**  | `/api/sales`               |
+| **Método**| `GET`                      |
+| **Roles** | `administrador`, `cajero`  |
+
+### Parámetros de Query
+
+| Parámetro | Tipo    | Default | Descripción                                      |
+| --------- | ------- | ------- | ------------------------------------------------ |
+| `page`    | number  | `1`     | Número de página                                 |
+| `limit`   | number  | `10`    | Cantidad de registros por página (máx. 100)      |
+
+### Ejemplo de petición
+
+```bash
+curl http://localhost:3000/api/sales?page=1&limit=10
+```
+
+### Respuesta exitosa — `200 OK`
+
+```json
+{
+  "estado": "ok",
+  "ventas": [
+    {
+      "id": 1,
+      "total_dolares": "5.0000",
+      "total_bolivares": "227.5000",
+      "tasa_cambio_usada": "45.5000",
+      "fecha_venta": "2026-03-10T15:30:00.000Z",
+      "usuario": "juanp"
+    }
+  ],
+  "paginacion": {
+    "total": 1,
+    "pagina": 1,
+    "limite": 10,
+    "totalPaginas": 1
+  }
+}
+```
+
+---
+
+## 🛒 Obtener Detalle de Venta
+
+Retorna la información completa de una venta específica: cabecera, productos vendidos y métodos de pago utilizados.
+
+| Propiedad | Valor                      |
+| --------- | -------------------------- |
+| **Ruta**  | `/api/sales/:id`           |
+| **Método**| `GET`                      |
+| **Roles** | `administrador`, `cajero`  |
+
+### Respuesta exitosa — `200 OK`
+
+```json
+{
+  "estado": "ok",
+  "venta": {
+    "id": 1,
+    "id_usuario": 1,
+    "total_dolares": "5.0000",
+    "total_bolivares": "227.5000",
+    "tasa_cambio_usada": "45.5000",
+    "fecha_venta": "2026-03-10T15:30:00.000Z",
+    "usuario": "juanp",
+    "usuario_nombre": "Juan Pérez"
+  },
+  "productos": [
+    {
+      "cantidad": 2,
+      "precio_unitario_al_vender": "1.5000",
+      "nombre_producto": "Harina PAN",
+      "codigo_barras": "1234567890123"
+    },
+    {
+      "cantidad": 1,
+      "precio_unitario_al_vender": "2.0000",
+      "nombre_producto": "Arroz Mary",
+      "codigo_barras": "9876543210987"
+    }
+  ],
+  "pagos": [
+    {
+      "monto_dolares": "3.0000",
+      "nombre_cuenta": "Banesco USD - Zelle",
+      "moneda": "USD"
+    },
+    {
+      "monto_dolares": "2.0000",
+      "nombre_cuenta": "Banesco VES",
+      "moneda": "VES"
+    }
+  ]
+}
+```
+
+> **Nota:** Al igual que en las compras, las operaciones de Modificar (`PUT`) y Eliminar (`DELETE`) en ventas están intencionalmente deshabilitadas para garantizar la integridad contable. Frente a cualquier error se deberá gestionar una *Devolución*.
+
+---
+
 ## ⚙️ Crear Configuración
 
 Crea un nuevo valor de configuración en el sistema.

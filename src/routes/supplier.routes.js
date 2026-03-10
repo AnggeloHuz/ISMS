@@ -8,10 +8,37 @@ const router = Router();
 // ─── Gestión de Proveedores ──────────────────────
 
 /**
- * GET /api/suppliers?page=1&limit=10
- * GET /api/suppliers?all=true
- * Lista proveedores con paginación o todos de una vez.
- * Protegido: Requiere token JWT y rol 'administrador'.
+ * @swagger
+ * tags:
+ *   name: Proveedores
+ *   description: Gestión de proveedores
+ */
+
+/**
+ * @swagger
+ * /suppliers:
+ *   get:
+ *     summary: Lista proveedores con paginación o todos a la vez
+ *     tags: [Proveedores]
+ *     security:
+ *       - bearerAuth: []
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: all
+ *         schema:
+ *           type: boolean
+ *     responses:
+ *       200:
+ *         description: Ok
  */
 router.get(
     '/',
@@ -46,9 +73,37 @@ router.get(
 );
 
 /**
- * POST /api/suppliers
- * Crea un nuevo proveedor.
- * Protegido: Requiere token JWT y rol 'administrador'.
+ * @swagger
+ * /suppliers:
+ *   post:
+ *     summary: Crea un nuevo proveedor
+ *     tags: [Proveedores]
+ *     security:
+ *       - bearerAuth: []
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - rif
+ *               - razon_social
+ *             properties:
+ *               rif:
+ *                 type: string
+ *               razon_social:
+ *                 type: string
+ *               nombre_contacto:
+ *                 type: string
+ *               telefono:
+ *                 type: string
+ *               direccion:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Ok
  */
 router.post(
     '/',
@@ -97,9 +152,38 @@ router.post(
 );
 
 /**
- * PUT /api/suppliers/:id
- * Actualiza un proveedor existente.
- * Protegido: Requiere token JWT y rol 'administrador'.
+ * @swagger
+ * /suppliers/{id}:
+ *   put:
+ *     summary: Actualiza un proveedor existente
+ *     tags: [Proveedores]
+ *     security:
+ *       - bearerAuth: []
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               rif:
+ *                 type: string
+ *               razon_social:
+ *                 type: string
+ *               nombre_contacto:
+ *                 type: string
+ *               telefono:
+ *                 type: string
+ *               direccion:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Ok
  */
 router.put(
     '/:id',
@@ -164,9 +248,21 @@ router.put(
 );
 
 /**
- * DELETE /api/suppliers/:id
- * Elimina un proveedor.
- * Protegido: Requiere token JWT y rol 'administrador'.
+ * @swagger
+ * /suppliers/{id}:
+ *   delete:
+ *     summary: Elimina un proveedor
+ *     tags: [Proveedores]
+ *     security:
+ *       - bearerAuth: []
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Ok
  */
 router.delete(
     '/:id',

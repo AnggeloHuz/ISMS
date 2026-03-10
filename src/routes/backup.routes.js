@@ -8,9 +8,26 @@ const router = Router();
 // ─── Respaldo de Base de Datos ───────────────────
 
 /**
- * POST /api/backup
- * Crea un respaldo de la base de datos.
- * Protegido: Requiere token JWT y rol 'administrador'.
+ * @swagger
+ * tags:
+ *   name: Base de Datos
+ *   description: Gestión y respaldo de la base de datos
+ */
+
+/**
+ * @swagger
+ * /backup:
+ *   post:
+ *     summary: Crea un respaldo completo de la base de datos en SQL
+ *     tags: [Base de Datos]
+ *     security:
+ *       - bearerAuth: []
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Respaldo de la base de datos creado exitosamente.
+ *       500:
+ *         description: Error en el servidor al intentar crear el respaldo.
  */
 router.post(
     '/backup',

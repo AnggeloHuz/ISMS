@@ -7,9 +7,37 @@ const router = Router();
 // ─── Bitácora de Auditoría ───────────────────────
 
 /**
- * GET /api/audit?page=1&limit=10
- * Lista los registros de auditoría con paginación.
- * Protegido: Requiere token JWT y rol 'administrador'.
+ * @swagger
+ * tags:
+ *   name: Auditoría
+ *   description: Consulta de la bitácora de eventos del sistema
+ */
+
+/**
+ * @swagger
+ * /audit:
+ *   get:
+ *     summary: Lista los registros de auditoría con paginación
+ *     tags: [Auditoría]
+ *     security:
+ *       - bearerAuth: []
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *         description: Número de página
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Cantidad de registros por página
+ *     responses:
+ *       200:
+ *         description: Retorna la lista de auditoría paginada
+ *       400:
+ *         description: Parámetros inválidos
  */
 router.get(
     '/',

@@ -8,10 +8,38 @@ const router = Router();
 // ─── Gestión de Categorías ───────────────────────
 
 /**
- * GET /api/categories?page=1&limit=10
- * GET /api/categories?all=true
- * Lista categorías con paginación o todas de una vez.
- * Protegido: Requiere token JWT y rol 'administrador'.
+ * @swagger
+ * tags:
+ *   name: Categorías
+ *   description: Gestión de categorías de productos
+ */
+
+/**
+ * @swagger
+ * /categories:
+ *   get:
+ *     summary: Lista categorías con paginación o todas de una vez
+ *     tags: [Categorías]
+ *     security:
+ *       - bearerAuth: []
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: all
+ *         schema:
+ *           type: boolean
+ *         description: Si es true, ignora la paginación
+ *     responses:
+ *       200:
+ *         description: Lista de categorías obtenida
  */
 router.get(
     '/',
@@ -46,9 +74,30 @@ router.get(
 );
 
 /**
- * POST /api/categories
- * Crea una nueva categoría.
- * Protegido: Requiere token JWT y rol 'administrador'.
+ * @swagger
+ * /categories:
+ *   post:
+ *     summary: Crea una nueva categoría
+ *     tags: [Categorías]
+ *     security:
+ *       - bearerAuth: []
+ *       - cookieAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - nombre
+ *             properties:
+ *               nombre:
+ *                 type: string
+ *               descripcion:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: Categoría creada
  */
 router.post(
     '/',
@@ -95,9 +144,32 @@ router.post(
 );
 
 /**
- * PUT /api/categories/:id
- * Actualiza una categoría existente.
- * Protegido: Requiere token JWT y rol 'administrador'.
+ * @swagger
+ * /categories/{id}:
+ *   put:
+ *     summary: Actualiza una categoría existente
+ *     tags: [Categorías]
+ *     security:
+ *       - bearerAuth: []
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               nombre:
+ *                 type: string
+ *               descripcion:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Categoría actualizada
  */
 router.put(
     '/:id',
@@ -151,9 +223,23 @@ router.put(
 );
 
 /**
- * DELETE /api/categories/:id
- * Elimina una categoría.
- * Protegido: Requiere token JWT y rol 'administrador'.
+ * @swagger
+ * /categories/{id}:
+ *   delete:
+ *     summary: Elimina una categoría
+ *     tags: [Categorías]
+ *     security:
+ *       - bearerAuth: []
+ *       - cookieAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Categoría eliminada
+ *       400:
+ *         description: No se puede eliminar si tiene productos asociados
  */
 router.delete(
     '/:id',
