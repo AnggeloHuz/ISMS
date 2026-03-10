@@ -473,7 +473,7 @@ curl http://localhost:3000/api/audit?page=1&limit=10
 | ------------ | ----------------------------------------- |
 | `ACCESO`     | Login, Backup                             |
 | `SALIDA`     | Logout                                    |
-| `INSERTAR`   | Crear usuario, Crear categoría, Crear proveedor, Crear cuenta bancaria, Crear producto |
+| `INSERTAR`   | Crear usuario, Crear categoría, Crear proveedor, Crear cuenta bancaria, Crear producto, Crear compra |
 | `ACTUALIZAR` | Cambiar contraseña, cambiar rol, Editar categoría, Editar proveedor, Editar cuenta bancaria, Editar producto |
 | `ELIMINAR`   | Desactivar usuario, Eliminar categoría, Eliminar proveedor, Eliminar cuenta bancaria, Eliminar producto |
 
@@ -1329,5 +1329,326 @@ curl -X DELETE http://localhost:3000/api/products/1
   "estado": "error",
   "mensaje": "No se pudo eliminar el producto.",
   "detalle": "No se puede eliminar el producto 'Harina PAN' porque está registrado en 2 venta(s). Por favor, desactívelo en su lugar."
+}
+```
+
+---
+
+## 🛒 Registrar Compra (Transaccional)
+
+Crea una nueva compra de mercancía. **Este proceso es transaccional:** suma los productos al inventario (`stock_actual`), actualiza sus costos, y descuenta los pagos de las cuentas bancarias indicadas. Soporta compra de múltiples productos y pagos mixtos (VES/USD).
+
+| Propiedad | Valor                |
+| --------- | -------------------- |
+| **Ruta**  | `/api/purchases`     |
+| **Método**| `POST`               |
+| **Roles** | `administrador`, `almacenista` |
+
+### Ejemplo de petición (Body)
+
+```json
+{
+  "id_proveedor": 1,
+  "tasa_cambio_usada": 45.50,
+  "observaciones": "Compra de víveres semanales",
+  "productos": [
+    {
+      "id_producto": 1,
+      "cantidad": 50,
+      "costo_unitario_dolares": 0.85
+    },
+    {
+      "id_producto": 2,
+      "cantidad": 20,
+      "costo_unitario_dolares": 1.10
+    }
+  ],
+  "pagos": [
+    {
+      "id_cuenta_bancaria": 1, 
+      "monto_pagado_dolares": 40.00
+    },
+    {
+      "id_cuenta_bancaria": 2, 
+      "monto_pagado_dolares": 24.50
+    }
+  ]
+}
+```
+*Total de la compra en este ejemplo = (50 * $0.85) + (20 * $1.10) = $42.5 + $22.0 = $64.50.*
+*Total pagado = $40.00 + $24.50 = $64.50.*
+**El total de la compra debe ser exactamente igual a la suma de los montos pagados.**
+
+### Respuesta exitosa — `201 Created`
+
+```json
+{
+  "estado": "ok",
+  "mensaje": "Compra procesada exitosamente e inventario sumado.",
+  "compra": {
+    "id": 1,
+    "total_dolares": "64.50",
+    "total_bolivares": "2934.75"
+  }
+}
+```
+
+### Respuestas de error
+
+**`400 Bad Request`** (Monto descuadrado)
+```json
+{
+  "estado": "error",
+  "mensaje": "No se pudo registrar la compra.",
+  "detalle": "El total de pagos ($60.00) no coincide con el total de la compra ($64.50)."
+}
+```
+
+**`400 Bad Request`** (Saldo insuficiente)
+```json
+{
+  "estado": "error",
+  "mensaje": "No se pudo registrar la compra.",
+  "detalle": "Saldo insuficiente en la cuenta 'Banesco VES'. Requiere 1820.00 VES, pero tiene 500.00."
+}
+```
+
+---
+
+## 🛒 Listar Historial de Compras
+
+Lista las compras registradas en el sistema (cabecera).
+
+| Propiedad | Valor                |
+| --------- | -------------------- |
+| **Ruta**  | `/api/purchases`     |
+| **Método**| `GET`                |
+| **Roles** | `administrador`, `almacenista` |
+
+### Parámetros de Query
+
+| Parámetro | Tipo    | Default | Descripción                                      |
+| --------- | ------- | ------- | ------------------------------------------------ |
+| `page`    | number  | `1`     | Número de página                                 |
+| `limit`   | number  | `10`    | Cantidad de registros por página (máx. 100)      |
+
+### Ejemplo de petición
+
+```bash
+curl http://localhost:3000/api/purchases?page=1&limit=10
+```
+
+### Respuesta exitosa — `200 OK`
+
+```json
+{
+  "estado": "ok",
+  "compras": [
+    {
+      "id": 1,
+      "total_compra_dolares": "64.5000",
+      "total_compra_bolivares": "2934.7500",
+      "tasa_cambio_usada": "45.5000",
+      "fecha_compra": "2026-03-04T15:30:00.000Z",
+      "proveedor": "Distribuidora El Centro C.A.",
+      "usuario": "Juan Pérez"
+    }
+  ],
+  "paginacion": {
+    "total": 1,
+    "pagina": 1,
+    "limite": 10,
+    "totalPaginas": 1
+  }
+}
+```
+
+---
+
+## 🛒 Obtener Detalle de Compra
+
+Retorna la información completa de una compra específica: cabecera, productos comprados y métodos de pago utilizados.
+
+| Propiedad | Valor                    |
+| --------- | ------------------------ |
+| **Ruta**  | `/api/purchases/:id`     |
+| **Método**| `GET`                    |
+| **Roles** | `administrador`, `almacenista` |
+
+### Respuesta exitosa — `200 OK`
+
+```json
+{
+  "estado": "ok",
+  "compra": {
+    "id": 1,
+    "id_proveedor": 1,
+    "id_usuario": 1,
+    "total_compra_dolares": "64.5000",
+    "total_compra_bolivares": "2934.7500",
+    "tasa_cambio_usada": "45.5000",
+    "fecha_compra": "2026-03-04T15:30:00.000Z",
+    "observaciones": "Compra de víveres semanales",
+    "proveedor": "Distribuidora El Centro C.A.",
+    "usuario": "Juan Pérez"
+  },
+  "productos": [
+    {
+      "cantidad": 50,
+      "costo_unitario_al_comprar": "0.8500",
+      "nombre_producto": "Harina PAN",
+      "codigo_barras": "1234567890123"
+    },
+    {
+      "cantidad": 20,
+      "costo_unitario_al_comprar": "1.1000",
+      "nombre_producto": "Arroz Mary",
+      "codigo_barras": "9876543210987"
+    }
+  ],
+  "pagos": [
+    {
+      "monto_dolares": "40.0000",
+      "nombre_cuenta": "Banesco USD - Zelle",
+      "moneda": "USD"
+    },
+    {
+      "monto_dolares": "24.5000",
+      "nombre_cuenta": "Banesco VES",
+      "moneda": "VES"
+    }
+  ]
+}
+```
+
+> **Nota:** Por motivos de integridad del inventario y saldos contables, las operaciones de Modificar (`PUT`) y Eliminar (`DELETE`) sobre compras están intencionalmente deshabilitadas. Para revertir errores operacionales, se debe emitir una *Devolución* (módulo independiente).
+
+---
+
+## ⚙️ Crear Configuración
+
+Crea un nuevo valor de configuración en el sistema.
+
+| Propiedad | Valor                      |
+| --------- | -------------------------- |
+| **Ruta**  | `/api/configurations`      |
+| **Método**| `POST`                     |
+| **Roles** | `administrador`            |
+
+### Ejemplo de petición (Body)
+
+```json
+{
+  "clave_configuracion": "moneda_principal",
+  "valor_configuracion": "USD"
+}
+```
+
+### Respuesta exitosa — `201 Created`
+
+```json
+{
+  "estado": "ok",
+  "mensaje": "Configuración creada exitosamente.",
+  "configuracion": {
+    "clave_configuracion": "moneda_principal",
+    "valor_configuracion": "USD"
+  }
+}
+```
+
+---
+
+## ⚙️ Listar Configuraciones
+
+Obtiene las configuraciones del sistema (con o sin paginación).
+
+| Propiedad | Valor                      |
+| --------- | -------------------------- |
+| **Ruta**  | `/api/configurations`      |
+| **Método**| `GET`                      |
+| **Roles** | `administrador`            |
+
+### Ejemplo de petición (todas)
+
+```bash
+curl http://localhost:3000/api/configurations?all=true
+```
+
+### Respuesta exitosa — `200 OK`
+
+```json
+{
+  "estado": "ok",
+  "configuraciones": [
+    {
+      "clave_configuracion": "tasa_bcv",
+      "valor_configuracion": "36.45",
+      "fecha_actualizacion": "2026-03-10T15:00:00.000Z"
+    }
+  ],
+  "total": 1
+}
+```
+
+---
+
+## ⚙️ Editar Configuración
+
+Modifica el valor de una configuración existente.
+
+| Propiedad | Valor                                    |
+| --------- | ---------------------------------------- |
+| **Ruta**  | `/api/configurations/:clave_configuracion`|
+| **Método**| `PUT`                                      |
+| **Roles** | `administrador`                          |
+
+### Ejemplo de petición (Body)
+
+```bash
+curl -X PUT http://localhost:3000/api/configurations/tasa_bcv \
+-H "Content-Type: application/json" \
+-d '{"valor_configuracion": "36.80"}'
+```
+
+### Respuesta exitosa — `200 OK`
+
+```json
+{
+  "estado": "ok",
+  "mensaje": "Configuración actualizada exitosamente.",
+  "configuracion": {
+    "clave_configuracion": "tasa_bcv",
+    "valor_configuracion": "36.80"
+  }
+}
+```
+
+---
+
+## ⚙️ Eliminar Configuración
+
+Elimina una configuración del sistema.
+
+| Propiedad | Valor                                    |
+| --------- | ---------------------------------------- |
+| **Ruta**  | `/api/configurations/:clave_configuracion`|
+| **Método**| `DELETE`                                   |
+| **Roles** | `administrador`                          |
+
+### Ejemplo de petición
+
+```bash
+curl -X DELETE http://localhost:3000/api/configurations/moneda_principal
+```
+
+### Respuesta exitosa — `200 OK`
+
+```json
+{
+  "estado": "ok",
+  "clave_configuracion": "moneda_principal",
+  "valor_configuracion": "USD",
+  "mensaje": "Configuración eliminada correctamente."
 }
 ```

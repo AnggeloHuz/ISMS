@@ -8,6 +8,8 @@ import categoryRoutes from './category.routes.js';
 import supplierRoutes from './supplier.routes.js';
 import bankAccountRoutes from './bankAccount.routes.js';
 import productRoutes from './product.routes.js';
+import purchaseRoutes from './purchase.routes.js';
+import configurationRoutes from './configuration.routes.js';
 
 const router = Router();
 
@@ -21,6 +23,8 @@ router.use('/categories', categoryRoutes);
 router.use('/suppliers', supplierRoutes);
 router.use('/bank-accounts', bankAccountRoutes);
 router.use('/products', productRoutes);
+router.use('/purchases', purchaseRoutes);
+router.use('/configurations', configurationRoutes);
 
 export default router;
 

@@ -97,6 +97,7 @@ const initDatabase = async () => {
         id_proveedor INT,
         id_usuario INT,
         total_compra_dolares DECIMAL(19,4) NOT NULL,
+        tasa_cambio_usada DECIMAL(19,4) NOT NULL,
         total_compra_bolivares DECIMAL(19,4) NOT NULL,
         fecha_compra TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         observaciones TEXT,
@@ -112,6 +113,15 @@ const initDatabase = async () => {
         costo_unitario_al_comprar DECIMAL(19,4) NOT NULL,
         CONSTRAINT fk_detalle_compra FOREIGN KEY (id_compra) REFERENCES compras(id) ON DELETE CASCADE,
         CONSTRAINT fk_detalle_producto_compra FOREIGN KEY (id_producto) REFERENCES productos(id)
+      );
+
+      CREATE TABLE IF NOT EXISTS pagos_compras (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        id_compra INT,
+        id_cuenta_bancaria INT,
+        monto_pagado DECIMAL(19,4) NOT NULL,
+        CONSTRAINT fk_pago_compra FOREIGN KEY (id_compra) REFERENCES compras(id) ON DELETE CASCADE,
+        CONSTRAINT fk_pago_cuenta_compra FOREIGN KEY (id_cuenta_bancaria) REFERENCES cuentas_bancarias(id)
       );
 
       -- ==========================================
